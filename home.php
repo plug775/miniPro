@@ -3,12 +3,16 @@ session_start();
 ob_start();
 
 if (empty($_SESSION['adminid'])) {
-
     header("Location:index.php");
     exit();
 }
 
-$adminid = @$_SESSION['adminid'];
+$adminid = $_SESSION['adminid'];
+
+include("connect_db.php");
+$sql = "SELECT * FROM admin WHERE adminid = '$adminid'";
+$rs = $conn->query($sql);
+$r = $rs->fetch_object();
 ?>
 
 <!doctype html>
@@ -18,107 +22,138 @@ $adminid = @$_SESSION['adminid'];
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Admin Dashboard - Payroll System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #f4f7fb;
-            --card: #ffffff;
-            --accent: #0b63d4;
-            --muted: #65738a;
+            --primary: #007bff;
+            --bg: #f7f9fc;
+            --white: #ffffff;
+            --text-dark: #222;
+            --text-muted: #666;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
         * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
-            font-family: 'Kanit', sans-serif
+            font-family: 'Kanit', sans-serif;
         }
 
         body {
-            margin: 0;
             background: var(--bg);
-            color: #12222b
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 32px auto;
-            padding: 20px
+            color: var(--text-dark);
         }
 
         .sidebar {
-            width: 220px;
-            background: #fff;
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            width: 240px;
+            background: var(--white);
             position: fixed;
-            left: 20px;
-            top: 20px;
-            bottom: 20px
+            top: 0;
+            left: 0;
+            bottom: 0;
+            padding: 24px 16px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
 
         .sidebar h2 {
-            font-size: 18px;
-            margin-top: 0;
-            margin-bottom: 16px;
-            color: var(--accent)
+            color: var(--primary);
+            font-size: 20px;
+            margin-bottom: 10px;
         }
 
         .sidebar a {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             text-decoration: none;
-            color: #222;
-            padding: 8px 10px;
+            color: var(--text-dark);
+            padding: 10px 12px;
             border-radius: 8px;
-            margin-bottom: 6px;
-            transition: 0.2s
+            transition: 0.2s;
         }
 
         .sidebar a:hover {
-            background: var(--accent);
-            color: #fff
+            background: var(--primary);
+            color: #fff;
         }
 
         .main {
-            margin-left: 260px
+            margin-left: 260px;
+            padding: 30px 40px;
         }
 
         .header {
             display: flex;
             justify-content: space-between;
-            align-items: center
+            align-items: center;
+            margin-bottom: 20px;
         }
 
         .header h1 {
-            margin: 0;
-            font-size: 20px
+            font-size: 22px;
+        }
+
+        .user-info a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .welcome {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
         }
 
         .cards {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 12px;
-            margin-top: 16px
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
         }
 
         .card {
-            background: var(--card);
-            padding: 14px;
-            border-radius: 10px;
-            box-shadow: 0 4px 18px rgba(10, 30, 60, 0.06)
+            background: var(--white);
+            padding: 18px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
         }
 
         .card h3 {
-            margin: 0;
-            font-size: 13px;
-            color: var(--muted)
+            color: var(--text-muted);
+            font-size: 14px;
         }
 
         .card p {
-            margin: 8px 0 0;
-            font-size: 18px;
-            font-weight: 700
+            font-size: 20px;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .main {
+                margin-left: 0;
+                padding: 16px;
+            }
         }
     </style>
 </head>
@@ -126,49 +161,44 @@ $adminid = @$_SESSION['adminid'];
 <body>
     <div class="sidebar">
         <h2>เมนูหลัก</h2>
-        <?php
-        include("nav.php");
-        ?>
+        <?php include("nav.php"); ?>
     </div>
-    <?php
-    include("connect_db.php");
-    $sql = "select * from admin where adminid = '$adminid'";
-    $rs = $conn->query($sql);
-    $r = $rs->fetch_object();
 
-    ?>
     <div class="main">
-        <div class="container">
-            <div class="header">
-                <h1>Admin Dashboard - Payroll System</h1>
-                <div class="small">ผู้ใช้งาน:
-
-                    <a href="profile.php?adminid=<?= $r->adminid ?>"><?= $r->name ?></a>
-                </div>
+        <div class="header">
+            <h1>Admin Dashboard - Payroll System</h1>
+            <div class="user-info">
+                ผู้ใช้งาน:
+                <a href="profile.php?adminid=<?= $r->adminid ?>"><?= htmlspecialchars($r->name) ?></a>
             </div>
-            <p>สวัสดี Admin 👋 คุณสามารถเลือกเมนูด้านซ้ายเพื่อจัดการข้อมูลต่าง ๆ ได้ เช่น จัดการพนักงาน, ตรวจสอบเวลา,
-                คำนวณโอที และดูรายงานสรุป</p>
-            <div class="cards">
-                <div class="card">
-                    <h3>จำนวนพนักงานทั้งหมด</h3>
-                    <p>50</p>
-                </div>
-                <div class="card">
-                    <h3>เงินเดือนรวมต่อเดือน</h3>
-                    <p>750,000 ฿</p>
-                </div>
-                <div class="card">
-                    <h3>ยอดโอทีรวม</h3>
-                    <p>25,000 ฿</p>
-                </div>
-                <div class="card">
-                    <h3>ยอดเงินหักมาสายรวม</h3>
-                    <p>2,300 ฿</p>
-                </div>
-                <div class="card">
-                    <h3>ยอดโบนัสรวม</h3>
-                    <p>80,000 ฿</p>
-                </div>
+        </div>
+
+        <div class="welcome">
+            <p>สวัสดี <b>Admin 👋</b>
+                คุณสามารถเลือกเมนูด้านซ้ายเพื่อจัดการข้อมูลต่าง ๆ ได้ เช่น
+                จัดการพนักงาน, ตรวจสอบเวลา, คำนวณโอที และดูรายงานสรุป</p>
+        </div>
+
+        <div class="cards">
+            <div class="card">
+                <h3>จำนวนพนักงานทั้งหมด</h3>
+                <p>50</p>
+            </div>
+            <div class="card">
+                <h3>เงินเดือนรวมต่อเดือน</h3>
+                <p>750,000 ฿</p>
+            </div>
+            <div class="card">
+                <h3>ยอดโอทีรวม</h3>
+                <p>25,000 ฿</p>
+            </div>
+            <div class="card">
+                <h3>ยอดเงินหักมาสายรวม</h3>
+                <p>2,300 ฿</p>
+            </div>
+            <div class="card">
+                <h3>ยอดโบนัสรวม</h3>
+                <p>80,000 ฿</p>
             </div>
         </div>
     </div>

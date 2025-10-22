@@ -1,14 +1,20 @@
 <?php
 // overtime.php - จัดการโอที (ตัวอย่าง)
-$ot_records = [
-    ['id' => 'E001', 'name' => 'สมชาย', 'date' => '2025-10-02', 'hours' => 2.5],
-    ['id' => 'E002', 'name' => 'สมหญิง', 'date' => '2025-10-03', 'hours' => 1.0],
-    ['id' => 'E004', 'name' => 'กาญจนา', 'date' => '2025-10-01', 'hours' => 4.0],
-];
-$ot_rate = 150; // บาท/ชั่วโมง
-// รวมโอที
-$total_ot_hours = array_sum(array_column($ot_records, 'hours'));
-$total_ot_pay = $total_ot_hours * $ot_rate;
+session_start();
+ob_start();
+
+if (empty($_SESSION['adminid'])) {
+    header("Location:index.php");
+    exit();
+}
+include("connect_db.php");
+$adminid = $_SESSION['adminid'];
+
+$sql = "SELECT ot.OTID, ot.Dates, ot.OTMin, ot.OTAmount, employee.EmployeeID, employee.FirstName
+FROM ot
+JOIN employee ON ot.EmployeeID = employee.EmployeeID";
+$result = $conn->query($sql);
+$rows = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 ?>
 <!doctype html>
 <html lang="th">
@@ -87,12 +93,12 @@ $total_ot_pay = $total_ot_hours * $ot_rate;
     <div class="main">
         <h1>จัดการโอที</h1>
         <div class="card">
-            <strong>อัตราโอที:</strong> <?php echo number_format($ot_rate); ?> ฿/ชั่วโมง &nbsp; | &nbsp;
+            <!-- <strong>อัตราโอที:</strong> <?php echo number_format($ot_rate); ?> ฿/ชั่วโมง &nbsp; | &nbsp;
             <strong>รวมชั่วโมง:</strong> <?php echo $total_ot_hours; ?> ชม. &nbsp; | &nbsp;
-            <strong>รวมยอดโอที:</strong> <?php echo number_format($total_ot_pay); ?> ฿
+            <strong>รวมยอดโอที:</strong> <?php echo number_format($total_ot_pay); ?> ฿ -->
         </div>
 
-        <a class="btn" href="#">+ บันทึกโอทีใหม่</a>
+        <a class="btn" href="insertOT.php">+ บันทึกโอทีใหม่</a>
 
         <table class="table" style="margin-top:12px">
             <thead>
@@ -102,20 +108,31 @@ $total_ot_pay = $total_ot_hours * $ot_rate;
                     <th>วันที่</th>
                     <th>ชั่วโมง</th>
                     <th>จำนวนเงิน (฿)</th>
+                    <th>จัดการ</th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($ot_records as $r):
-                    $pay = $r['hours'] * $ot_rate; ?>
+            <?php if (empty($rows)): ?>
                     <tr>
-                        <td><?php echo $r['id']; ?></td>
-                        <td><?php echo $r['name']; ?></td>
-                        <td><?php echo $r['date']; ?></td>
-                        <td><?php echo $r['hours']; ?></td>
-                        <td><?php echo number_format($pay, 0); ?></td>
+                        <td colspan="9" class="text-center">ไม่มีข้อมูลพนักงาน</td>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
+                <?php else: ?>
+                    <?php foreach ($rows as $r): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($r['EmployeeID']) ?></td>
+                            <td><?= htmlspecialchars($r['FirstName'] ) ?></td>
+                            <td><?= htmlspecialchars($r['Dates']) ?></td>
+                            <td><?= htmlspecialchars($r['OTMin']) ?></td>
+                            <td><?= number_format($r['OTAmount'], 2) ?> ฿</td>
+                            <td>
+                                <a href="form_update_ot.php?OTID=<?= urlencode($r['OTID']) ?>" class="btn btn-sm btn-warning text-white">แก้ไข</a>
+                                <a href="overtime_delete.php?OTID=<?= urlencode($r['OTID']) ?>"
+                                   class="btn btn-sm btn-danger text-white"
+                                   onclick="return confirm('ยืนยันการลบข้อมูล ot <?= addslashes(htmlspecialchars($r['EmployeeID'] . ' ' . $r['FirstName'])) ?> ?')">ลบ</a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
         </table>
     </div>
 </body>

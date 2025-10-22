@@ -109,7 +109,7 @@
     <div class="sidebar">
         <h2>เมนูหลัก</h2>
         <a href="admin_dashboard.php">🏠 Dashboard</a>
-        <a href="employees.php">👥 พนักงาน</a>
+        <a href="employee.php">👥 พนักงาน</a>
         <a href="attendance.php">⏰ เวลาเข้างาน</a>
         <a href="overtime.php">💼 โอที</a>
         <a href="bonus.php">🎁 โบนัส</a>

@@ -14,21 +14,23 @@ $errors = [];
 
 // POST: บันทึก OT
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $OTID = trim($_POST['OTID'] ?? '');
     $EmployeeID = trim($_POST['EmployeeID'] ?? '');
     $Dates = trim($_POST['Dates'] ?? '');
     $OTMin = trim($_POST['OTMin'] ?? '');
     $OTAmount = trim($_POST['OTAmount'] ?? '');
 
+    if ($OTID === '') $errors[] = 'กรุณากรอก OTID';
     if ($EmployeeID === '') $errors[] = 'กรุณาเลือกพนักงาน';
     if ($Dates === '') $errors[] = 'กรุณากรอกวันที่ OT';
     if (!is_numeric($OTMin)) $errors[] = 'OT นาทีต้องเป็นตัวเลข';
     if (!is_numeric($OTAmount)) $errors[] = 'จำนวนเงิน OT ต้องเป็นตัวเลข';
 
     if (empty($errors)) {
-        $sql = "INSERT INTO ot (EmployeeID, Dates, OTMin, OTAmount) VALUES (?, ?, ?, ?)";
+        $sql = "INSERT INTO ot (OTID, EmployeeID, Dates, OTMin, OTAmount) VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         if ($stmt) {
-            $stmt->bind_param("ssdd", $EmployeeID, $Dates, $OTMin, $OTAmount);
+            $stmt->bind_param("issdd", $OTID, $EmployeeID, $Dates, $OTMin, $OTAmount);
             if ($stmt->execute()) {
                 $stmt->close();
                 header("Location: overtime.php?msg=inserted");
@@ -49,7 +51,6 @@ if ($res) {
     $employees = $res->fetch_all(MYSQLI_ASSOC);
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -58,18 +59,10 @@ if ($res) {
 <title>เพิ่มข้อมูล OT</title>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
-:root {
-    --bg: #f4f7fb;
-    --card: #ffffff;
-    --accent: #0b63d4;
-    --muted: #65738a;
-}
-* { box-sizing: border-box; font-family: 'Kanit', sans-serif; }
+:root { --bg:#f4f7fb; --card:#fff; --accent:#0b63d4; --muted:#65738a; }
+* { box-sizing:border-box; font-family:'Kanit',sans-serif; }
 body { margin:0; background:var(--bg); color:#12222b; }
-.sidebar {
-    width:220px; background:#fff; border-radius:12px; padding:16px;
-    box-shadow:0 4px 12px rgba(0,0,0,0.05); position:fixed; left:20px; top:20px; bottom:20px;
-}
+.sidebar { width:220px; background:#fff; border-radius:12px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,0.05); position:fixed; left:20px; top:20px; bottom:20px; }
 .sidebar h2 { font-size:18px; margin-top:0; margin-bottom:16px; color:var(--accent); }
 .sidebar a { display:block; text-decoration:none; color:#222; padding:8px 10px; border-radius:8px; margin-bottom:6px; transition:0.2s; }
 .sidebar a:hover { background:var(--accent); color:#fff; }
@@ -77,9 +70,7 @@ body { margin:0; background:var(--bg); color:#12222b; }
 h1 { font-size:20px; margin-top:0; }
 .card-form { background:#fff; padding:18px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.04); }
 label { font-weight:600; margin-bottom:6px; display:block; }
-input[type="text"], input[type="number"], input[type="date"], select {
-    width:100%; padding:8px 10px; border:1px solid #e6e9ee; border-radius:6px; margin-bottom:12px;
-}
+input[type="text"], input[type="number"], input[type="date"], select { width:100%; padding:8px 10px; border:1px solid #e6e9ee; border-radius:6px; margin-bottom:12px; }
 .btn { display:inline-block; padding:8px 12px; background:var(--accent); color:#fff; border-radius:6px; text-decoration:none; border:none; cursor:pointer; }
 .btn:hover { background:#084a9a; }
 .btn-cancel { background:#6c757d; margin-left:8px; text-decoration:none; color:#fff; padding:8px 12px; display:inline-block; border-radius:6px; }
@@ -88,11 +79,11 @@ input[type="text"], input[type="number"], input[type="date"], select {
 </head>
 <body>
 <div class="sidebar">
-    <h2>เมนูหลัก</h2>
-    <a href="admin_dashboard.php">🏠 Dashboard</a>
-    <a href="overtime.php">💼 โอที</a>
-    <a href="attendance.php">⏰ เวลาเข้างาน</a>
-    <a href="employee.php">👥 จัดการพนักงาน</a>
+<h2>เมนูหลัก</h2>
+<a href="admin_dashboard.php">🏠 Dashboard</a>
+<a href="overtime.php">💼 โอที</a>
+<a href="attendance.php">⏰ เวลาเข้างาน</a>
+<a href="employee.php">👥 จัดการพนักงาน</a>
 </div>
 
 <div class="main">
@@ -110,6 +101,9 @@ input[type="text"], input[type="number"], input[type="date"], select {
 
 <div class="card-form">
 <form method="post" action="">
+    <label>OTID</label>
+    <input type="text" name="OTID" value="<?= htmlspecialchars($_POST['OTID'] ?? '', ENT_QUOTES) ?>">
+
     <label>พนักงาน</label>
     <select name="EmployeeID">
         <option value="">-- เลือกพนักงาน --</option>

@@ -118,7 +118,7 @@ function diff_minutes($a, $b)
     <div class="sidebar">
         <h3>เมนูหลัก</h3>
         <a href="admin_dashboard.php">🏠 Dashboard</a><br>
-        <a href="employees.php">👥 จัดการพนักงาน</a><br>
+        <a href="employee.php">👥 จัดการพนักงาน</a><br>
         <a href="attendance.php">⏰ เวลาเข้างาน</a><br>
         <a href="overtime.php">💼 โอที</a><br>
         <a href="bonus.php">🎁 โบนัส</a><br>

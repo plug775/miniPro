@@ -104,6 +104,8 @@ $admin = $result->fetch_assoc();
         <div class="card">
             <h2>ข้อมูลโปรไฟล์ผู้ดูแลระบบ</h2>
 
+            l
+
             <div class="info">
                 <label>ชื่อ-นามสกุล:</label>
                 <div><?= htmlspecialchars($admin['name'] ?? '-') ?></div>
